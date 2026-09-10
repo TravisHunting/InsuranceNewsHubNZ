@@ -1,0 +1,2 @@
+import{NextResponse}from'next/server';import{d1,ensureDb}from'@/lib/database';import{sourceRegistry}from'@/lib/sources';
+export async function POST(){await ensureDb();const id=crypto.randomUUID();const now=new Date().toISOString();const total=sourceRegistry.filter((source)=>source.enabled).length;await d1().prepare(`INSERT INTO scrape_runs (id,status,cursor,total_sources,created_at,updated_at) VALUES (?,'running',0,?,?,?)`).bind(id,total,now,now).run();return NextResponse.json({id,status:'running',cursor:0,totalSources:total})}

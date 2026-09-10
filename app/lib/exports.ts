@@ -1,0 +1,2 @@
+export const csvEscape=(value:unknown)=>`"${String(Array.isArray(value)?value.join('|'):value??'').replace(/"/g,'""')}"`;
+export function compareMetric(current:{metricKey:string;unit:string;geography?:string;population?:string;definition?:string},previous:typeof current){return current.metricKey===previous.metricKey&&current.unit===previous.unit&&(current.geography||'')===(previous.geography||'')&&(current.population||'')===(previous.population||'')&&(current.definition||'')===(previous.definition||'')}

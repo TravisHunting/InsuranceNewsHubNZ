@@ -1,0 +1,2 @@
+import{NextRequest,NextResponse}from'next/server';import{d1,ensureDb}from'@/lib/database';
+export async function GET(_request:NextRequest,{params}:{params:Promise<{runId:string}>}){await ensureDb();const{runId}=await params;const [run,events]=await Promise.all([d1().prepare(`SELECT * FROM scrape_runs WHERE id=?`).bind(runId).first(),d1().prepare(`SELECT * FROM scrape_events WHERE run_id=? ORDER BY id DESC LIMIT 50`).bind(runId).all()]);if(!run)return NextResponse.json({error:'Not found'},{status:404});return NextResponse.json({run,events:events.results})}
