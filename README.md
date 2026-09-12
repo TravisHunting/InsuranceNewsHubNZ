@@ -21,6 +21,14 @@ npm run build
 
 See `app/.env.example` for runtime settings. Keep secrets out of Git; configure hosted values through Sites. Local Worker state is separate from production. Source configuration is in `app/lib/sources.ts`.
 
+## Daily and manual scrapes
+
+The `Daily source scrape` GitHub Action runs once daily at **18:17 UTC** (06:17 NZST / 07:17 NZDT the following morning). GitHub schedules can be delayed; the workflow must be enabled on the default branch. It can also be run from GitHub's **Run workflow** button.
+
+The action POSTs to `https://koru.travishunting.com/api/refresh/start`, then calls `/api/refresh/step` sequentially until the run completes. The existing public access policy is preserved, so no new secret is required. The workflow has a 30-minute limit, bounded source steps, and no automatic retries of ambiguous POST failures. Individual source failures remain diagnostics and do not stop other sources. Transport or endpoint failures fail the action; an interrupted run can be resumed from the UI.
+
+All new scrape triggers share a **four-hour cooldown**, measured from the last accepted trigger, including interrupted or failed runs. A single conditional database insert enforces this across concurrent requests and Worker instances. Blocked starts return HTTP 429 with `Retry-After`, `lastTriggeredAt`, `nextAllowedAt`, and a message stating the elapsed hours and the next allowed New Zealand date and time. The daily action logs this as a successful skip; **Scan all sources** displays the message in the refresh centre. Resuming an existing scan does not create a new trigger or reset the cooldown. Simultaneous source-step requests are rejected while a step is processing.
+
 ## Health NZ quarterly reports
 
 Choose **Scan all sources** to discover Word attachments on the configured Health NZ quarterly report publication page. Discovery accepts DOC/DOCX links and Word-labelled download links, excludes PDF alternatives and off-allowlist hosts, and retains the actual published URL rather than guessing a filename.
